@@ -11,7 +11,8 @@ Simple
 ```YAML
 
      - {
-         role: "sa-acme-sh"
+         role: "sa-acme-sh",
+         option_setup_cron: true
        }
 
 
@@ -21,9 +22,22 @@ Advanced
 
 ```YAML
 
-     - {
-         role: "sa-acme-sh",
-       }
+vars:
+
+  my_le_config_properties: 
+    - {regexp: "^export GD_Key=*", line: "export GD_Key=OHOH"}
+    - {regexp: "^export GD_Secret=*", line: "export GD_Secret=AHAH"} 
+
+  roles:
+    - {
+        role: "sa-acme-sh",
+
+        option_setup_cron: true,
+
+        le_wellknown_path: "/var/www/.well-known/acme-challenge",
+        acmesh_version: 2.8.0,
+        le_config_properties: "{{ my_le_config_properties }}" 
+      }
 
 
 ```
@@ -36,7 +50,7 @@ Certificate issuing via godaddy provider
 
 export GD_Key=***
 export GD_Secret=***
-acme.sh --issue -d voronenko.net -d www.voronenko.net --dns dns_g
+acme.sh --issue -d voronenko.net -d www.voronenko.net --dns dns_gd
 
 ```
 

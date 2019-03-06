@@ -7,11 +7,15 @@
 
   # Installation directory
   le_base_install_dir: /opt
-  le_config_dir: /etc/pki/acme
-  le_install_dir: "{{ le_base_install_dir }}/letsencrypt/"
+  le_install_dir: "{{ le_base_install_dir }}/letsencrypt"
+  le_config_dir: "{{ le_install_dir }}"
   le_wellknown_path: "/var/www/.well-known/acme-challenge"
 
   acmesh_version: 2.8.0
+
+  le_config_properties: []
+    # - {regexp: "^export GD_Key=*", line: "export GD_Key=HIHI"}
+    # - {regexp: "^export GD_Secret=*", line: "export GD_Secret=HAHA"}      
 
   le_overrides:
     - apache

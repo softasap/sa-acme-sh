@@ -32,9 +32,9 @@
   - name: Lets Encrypt | config dir
     file:
       dest: '{{le_config_dir}}'
-      owner: 'root'
+      owner: 'le'
       group: 'le'
-      mode: "u=rwx,g=rx,o=rx"
+      mode: "u=rwx,g=rx,o="
       state: directory
     become: yes
     tags:
@@ -83,12 +83,35 @@
     tags:
       - letsencrypt
 
+  - name: Lets Encrypt | Patch basic settings in {{le_config_dir}}/acme.conf
+    lineinfile:
+        dest: "{{le_config_dir}}/acme.conf"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        insertafter: "{{ item.insertafter | default('EOF') }}"
+    with_items: "{{ le_config_properties | default([]) }}"
+    become: yes      
+    tags:
+      - letsencrypt
+
   - name: Lets Encrypt | Link binary globally
     template:
       src: "{{ role_dir }}/templates/acme.sh.j2"
       dest: "/usr/local/bin/acme.sh"
       mode: "u=rwx,g=rx,o=rx"
     become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Setup cron
+    cron:
+      name:   "lets encrypt cron"
+      minute: "0"
+      hour:   "1"
+      job:    "/usr/local/bin/acme.sh --cron > {{ le_install_dir }}/cron.log"
+    become: yes
+    become_user: le
+    when: option_setup_cron
     tags:
       - letsencrypt
 
@@ -107,4 +130,3 @@
     become: yes
     tags:
       - letsencrypt
-
