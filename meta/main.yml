@@ -25,10 +25,11 @@ galaxy_info:
       versions:
         - trusty
         - xenial
-        - bionic 
+        - bionic
   galaxy_tags:
     - letsencrypt
     - ubuntu
+    - acmesh
   #platforms:
   #- name: EL
   #  versions:
