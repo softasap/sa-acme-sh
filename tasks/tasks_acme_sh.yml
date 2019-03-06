@@ -116,6 +116,14 @@
     tags:
       - letsencrypt
 
+  - include_tasks: "use/tasks_issue_cert.yml"
+    vars:
+      cert_config: "{{ item }}"
+    with_items: "{{ le_domains }}"
+    when: option_run_once
+    tags:
+      - letsencrypt
+
   - name: Lets Encrypt | store ansible facts | Create custom fact directory
     file:
       path: "/etc/ansible/facts.d"

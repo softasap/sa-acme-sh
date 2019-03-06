@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -xe
+
+acme.sh  {% for cert_domain in cert_config["names"] %} -d {{ cert_domain }} {% endfor %} \
+ {% if "dns" in cert_config %} --dns {{ cert_config["dns"] }} {% endif %} --issue

@@ -33,9 +33,9 @@
   option_leave_prolongation_endpoint: false
 
   # Domain list
-  le_domains:
-    - {
-        names: "voronenko.net www.voronenko.net",
-        nginx_config: "/etc/nginx/sites-available/voronenko_net"
-      }
+  le_domains: []
+#    - {
+#        names: "voronenko.net www.voronenko.net",
+#        nginx_config: "/etc/nginx/sites-available/voronenko_net"
+#      }
 

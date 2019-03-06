@@ -1,0 +1,58 @@
+---
+
+  - debug: var="cert_config"
+
+  - name: LetsEncrypt | template domain registration script
+    template:
+      src: templates/issue_cert.sh.j2
+      dest: /tmp/issue_cert.sh
+      mode: "u=rwx,g=rx,o=rx"
+    tags:
+      - letsencrypt
+
+  - name: LetsEncrypt | execute registration script
+    command: /tmp/issue_cert.sh
+    register: reg_result
+    ignore_errors: true
+    become: yes
+    become_user: le
+    tags:
+      - letsencrypt
+
+  - debug: var="reg_result"
+
+  - block:
+      - block:
+
+          - name: LetsEncrypt | Ensure ssl_install_path dir exists
+            file: path="{{ cert_config["ssl_install_path"] }}" state="directory"
+            become: yes
+            tags:
+              - letsencrypt
+
+          - name: LetsEncrypt | detect primary domain
+            set_fact:
+              cert_primary_domain: "{{ cert_config['names'][0] }}"
+              cert_primary_name: "{{ cert_config['certname'] if ('certname' in cert_config) else cert_config['names'][0] }}"
+
+          - name: LetsEncrypt | Link cert key
+            file:
+              src: "{{ le_install_dir }}/certs/{{ cert_primary_domain }}/{{ cert_primary_domain }}.key"
+              dest: "{{ cert_config['ssl_install_path']}}/{{ cert_primary_name }}.key"
+              state: link
+            become: yes
+            tags:
+              - letsencrypt
+
+          - name: LetsEncrypt | Link cert full
+            file:
+              src: "{{ le_install_dir }}/certs/{{ cert_primary_domain }}/fullchain.cer"
+              dest: "{{ cert_config['ssl_install_path']}}/{{ cert_primary_name }}.crt"
+              state: link
+            become: yes
+            tags:
+              - letsencrypt
+              -
+        when: ("scheme" not in cert_config) or (cert_config["scheme"] == "key_crt")
+
+    when: cert_config.ssl_install_path is defined
