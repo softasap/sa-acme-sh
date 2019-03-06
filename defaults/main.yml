@@ -7,6 +7,7 @@
 
   # Installation directory
   le_base_install_dir: /opt
+  le_config_dir: /etc/pki/acme
   le_install_dir: "{{ le_base_install_dir }}/letsencrypt/"
   le_wellknown_path: "/var/www/.well-known/acme-challenge"
 

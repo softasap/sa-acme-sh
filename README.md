@@ -28,6 +28,25 @@ Advanced
 
 ```
 
+Issuing certificate example:
+
+Certificate issuing via godaddy provider 
+
+```sh
+
+export GD_Key=***
+export GD_Secret=***
+acme.sh --issue -d voronenko.net -d www.voronenko.net --dns dns_g
+
+```
+
+Listing certificates 
+```
+acme.sh --list
+Main_Domain    KeyLength  SAN_Domains        Created                       Renew
+voronenko.net  ""         www.voronenko.net  Wed Mar  6 12:37:30 UTC 2019  Sun May  5 12:37:30 UTC 2019
+```
+
 
 
 Usage with ansible galaxy workflow
