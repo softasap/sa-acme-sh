@@ -1,0 +1,22 @@
+# Enter this command to create a sudoers override/include file:
+# sudo visudo -f /etc/sudoers.d/apache.overrides
+
+# (Make sure you actually have this in your /etc/sudoers - Run `sudo visudo` to check)
+# #includedir /etc/sudoers.d
+
+# This file assumes your deployment user is `le`
+
+
+Defaults !requiretty
+
+{% if ansible_os_family =="RedHat" %}
+Cmnd_Alias APACHE_RELOAD = /bin/systemctl reload httpd
+Cmnd_Alias APACHE_RESTART = /bin/systemctl restart httpd
+{% elif ansible_os_family == "Debian" %}
+Cmnd_Alias APACHE_RELOAD = /bin/systemctl reload apache2
+Cmnd_Alias APACHE_RESTART = /bin/systemctl restart apache2
+{% endif %}
+
+# No-Password Commands
+
+le ALL=NOPASSWD: APACHE_RESTART, APACHE_RELOAD

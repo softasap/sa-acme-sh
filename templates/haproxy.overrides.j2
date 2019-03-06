@@ -1,0 +1,14 @@
+# Enter this command to create a sudoers override/include file:
+# sudo visudo -f /etc/sudoers.d/haproxy.overrides
+
+# (Make sure you actually have this in your /etc/sudoers - Run `sudo visudo` to check)
+# #includedir /etc/sudoers.d
+
+# This file assumes your deployment user is `le`
+
+# Nginx Commands
+Cmnd_Alias HA_RESTART = /bin/systemctl reload haproxy
+Cmnd_Alias HA_RELOAD  = /bin/systemctl restart haproxy
+
+# No-Password Commands
+le ALL=NOPASSWD: HA_RESTART, HA_RELOAD

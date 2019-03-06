@@ -1,0 +1,107 @@
+---
+  - name: Lets Encrypt | Install dependencies
+    package:
+      name: "{{ item }}"
+    with_items:
+      - curl
+      - socat
+    become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Create user and home directory
+    user:
+      name:       "le"
+      shell:      "/bin/bash"
+      system:     "yes"
+      home:       "{{ le_install_dir }}"
+      createhome: True
+    become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Create letsencrypt '.acme-challenges'  directory
+    file:
+      path:  "{{ le_install_dir }}/.acme-challenges"
+      owner: "le"
+      state: "directory"
+    become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | pki dir
+    file:
+      dest: '/etc/pki/acme'
+      owner: 'le'
+      group: 'le'
+      mode: '0755'
+      state: directory
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Download distribution
+    get_url:
+      url: "https://github.com/Neilpang/acme.sh/archive/{{acmesh_version}}.tar.gz"
+      dest: '/tmp/{{acmesh_version}}.tar.gz'
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Unpack distribution
+    unarchive:
+      src: "/tmp/{{acmesh_version}}.tar.gz"
+      dest: '{{ le_base_install_dir }}'
+      remote_src: yes
+      owner: 'le'
+      group: 'le'
+    become: yes  
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Link current version
+    file:
+      src: "{{ le_base_install_dir }}/acme.sh-{{acmesh_version}}"
+      dest: "{{ le_install_dir }}"
+      state: link
+    become: yes  
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Link binary globally
+    file:
+      src: "{{ le_install_dir }}/acme.sh"
+      dest: "/usr/local/bin/acme.sh"
+      state: link
+    become: yes  
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Link binary globally
+    file:
+      src: "{{ le_install_dir }}/acme.sh"
+      dest: "/usr/local/bin/acme.sh"
+      state: link
+    become: yes  
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | sudoers rules      
+    template:
+      src: "{{ role_dir }}/{{ item }}.overrides.j2"
+      dest: "/etc/sudoers.d/{{ item }}.overrides"
+    with_items: "{{ le_overrides }}"  
+    become: yes  
+    tags:
+      - letsencrypt
+  
+
+- name: "Enable sudo reload haproxy by letsencrypt"
+  template:
+    src: letsencrypt-restart-haproxy.j2
+    dest: /etc/sudoers.d/20-letsencrypt-haproxy-restart
+  when: acme_sudo_reload_haproxy
+
+- name: "Enable sudo reload httpd by letsencrypt"
+  template:
+    src: letsencrypt-restart-httpd.j2
+    dest: /etc/sudoers.d/20-letsencrypt-httpd-restart
+  when: acme_sudo_reload_httpd
