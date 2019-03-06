@@ -1,0 +1,132 @@
+---
+  - name: Lets Encrypt | Install dependencies
+    package:
+      name: "{{ item }}"
+    with_items:
+      - curl
+      - socat
+    become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Create user and home directory
+    user:
+      name:       "le"
+      shell:      "/bin/bash"
+      system:     "yes"
+      home:       "{{ le_install_dir }}"
+      createhome: True
+    become: yes
+    tags:
+      - letsencrypt
+
+  # - name: Lets Encrypt | Create letsencrypt '.acme-challenges'  directory
+  #   file:
+  #     path:  "{{ le_install_dir }}/.acme-challenges"
+  #     owner: "le"
+  #     state: "directory"
+  #   become: yes
+  #   tags:
+  #     - letsencrypt
+
+  - name: Lets Encrypt | config dir
+    file:
+      dest: '{{le_config_dir}}'
+      owner: 'le'
+      group: 'le'
+      mode: "u=rwx,g=rx,o="
+      state: directory
+    become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Download distribution
+    get_url:
+      url: "https://github.com/Neilpang/acme.sh/archive/{{acmesh_version}}.tar.gz"
+      dest: '/tmp/{{acmesh_version}}.tar.gz'
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Unpack distribution
+    unarchive:
+      src: "/tmp/{{acmesh_version}}.tar.gz"
+      dest: '{{ le_base_install_dir }}'
+      remote_src: yes
+      owner: 'le'
+      group: 'le'
+    become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Copy current version
+    shell: "cp -r  {{ le_base_install_dir }}/acme.sh-{{acmesh_version}}/* {{ le_install_dir }}"
+    become: yes
+    become_user: le
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | sudoers rules
+    template:
+      src: "{{ role_dir }}/templates/{{ item }}.overrides.j2"
+      dest: "/etc/sudoers.d/{{ item }}.overrides"
+    with_items: "{{ le_overrides }}"
+    become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | template configuration
+    template:
+      src: "{{ role_dir }}/templates/acme.conf.j2"
+      dest: "{{le_config_dir}}/acme.conf"
+    with_items: "{{ le_overrides }}"
+    become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Patch basic settings in {{le_config_dir}}/acme.conf
+    lineinfile:
+        dest: "{{le_config_dir}}/acme.conf"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        insertafter: "{{ item.insertafter | default('EOF') }}"
+    with_items: "{{ le_config_properties | default([]) }}"
+    become: yes      
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Link binary globally
+    template:
+      src: "{{ role_dir }}/templates/acme.sh.j2"
+      dest: "/usr/local/bin/acme.sh"
+      mode: "u=rwx,g=rx,o=rx"
+    become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Setup cron
+    cron:
+      name:   "lets encrypt cron"
+      minute: "0"
+      hour:   "1"
+      job:    "/usr/local/bin/acme.sh --cron > {{ le_install_dir }}/cron.log"
+    become: yes
+    become_user: le
+    when: option_setup_cron
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | store ansible facts | Create custom fact directory
+    file:
+      path: "/etc/ansible/facts.d"
+      state: "directory"
+    become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | store ansible facts | Store facts
+    template:
+      src: templates/sa_role.fact.j2
+      dest: /etc/ansible/facts.d/sa-acme-ss.fact
+    become: yes
+    tags:
+      - letsencrypt
