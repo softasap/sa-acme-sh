@@ -31,7 +31,7 @@
 
   - name: Lets Encrypt | config dir
     file:
-      dest: '{{le_config_dir}}'
+      dest: '{{ le_config_dir }}'
       owner: 'le'
       group: 'le'
       mode: "u=rwx,g=rx,o="
@@ -42,14 +42,14 @@
 
   - name: Lets Encrypt | Download distribution
     get_url:
-      url: "https://github.com/Neilpang/acme.sh/archive/{{acmesh_version}}.tar.gz"
-      dest: '/tmp/{{acmesh_version}}.tar.gz'
+      url: "https://github.com/Neilpang/acme.sh/archive/{{ acmesh_version }}.tar.gz"
+      dest: '/tmp/{{ acmesh_version }}.tar.gz'
     tags:
       - letsencrypt
 
   - name: Lets Encrypt | Unpack distribution
     unarchive:
-      src: "/tmp/{{acmesh_version}}.tar.gz"
+      src: "/tmp/{{ acmesh_version }}.tar.gz"
       dest: '{{ le_base_install_dir }}'
       remote_src: yes
       owner: 'le'
@@ -59,7 +59,8 @@
       - letsencrypt
 
   - name: Lets Encrypt | Copy current version
-    shell: "cp -r  {{ le_base_install_dir }}/acme.sh-{{acmesh_version}}/* {{ le_install_dir }}"
+    shell: "cp -r  {{ le_base_install_dir }}/acme.sh-{{ acmesh_version }}/* {{ le_install_dir }}"
+    changed_when: False
     become: yes
     become_user: le
     tags:
@@ -77,20 +78,20 @@
   - name: Lets Encrypt | template configuration
     template:
       src: "{{ role_dir }}/templates/acme.conf.j2"
-      dest: "{{le_config_dir}}/acme.conf"
+      dest: "{{ le_config_dir }}/acme.conf"
     with_items: "{{ le_overrides }}"
     become: yes
     tags:
       - letsencrypt
 
-  - name: Lets Encrypt | Patch basic settings in {{le_config_dir}}/acme.conf
+  - name: Lets Encrypt | Patch basic settings in {{ le_config_dir }}/acme.conf
     lineinfile:
-        dest: "{{le_config_dir}}/acme.conf"
+        dest: "{{ le_config_dir }}/acme.conf"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
         insertafter: "{{ item.insertafter | default('EOF') }}"
     with_items: "{{ le_config_properties | default([]) }}"
-    become: yes      
+    become: yes
     tags:
       - letsencrypt
 
@@ -112,6 +113,14 @@
     become: yes
     become_user: le
     when: option_setup_cron
+    tags:
+      - letsencrypt
+
+  - include_tasks: "use/tasks_issue_cert.yml"
+    vars:
+      cert_config: "{{ item }}"
+    with_items: "{{ le_domains }}"
+    when: option_run_once
     tags:
       - letsencrypt
 
