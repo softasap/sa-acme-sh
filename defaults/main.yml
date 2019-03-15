@@ -22,6 +22,9 @@
     - nginx
     - haproxy 
 
+  le_groups: []
+#    - "www-data"
+
   # Let's Encrypt CA URL
   #le_ca:         "https://acme-staging-v02.api.letsencrypt.org/directory"
 
