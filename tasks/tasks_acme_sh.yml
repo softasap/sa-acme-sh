@@ -20,21 +20,15 @@
     tags:
       - letsencrypt
 
-  - name: Lets Encrypt | Add le user to additional groups, if needed
-    user: name='le' groups="{{ item }}" append=yes
-    with_items: "{{ le_groups | default([]) }}"
+  - name: Lets Encrypt | Create letsencrypt '.acme-challenges'  directory
+    file:
+      path:  "{{ le_wellknown_path }}"
+      owner: le
+      group: le
+      state: directory
     become: yes
     tags:
       - letsencrypt
-
-  # - name: Lets Encrypt | Create letsencrypt '.acme-challenges'  directory
-  #   file:
-  #     path:  "{{ le_install_dir }}/.acme-challenges"
-  #     owner: "le"
-  #     state: "directory"
-  #   become: yes
-  #   tags:
-  #     - letsencrypt
 
   - name: Lets Encrypt | config dir
     file:

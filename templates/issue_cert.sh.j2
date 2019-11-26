@@ -3,4 +3,6 @@
 set -xe
 
 acme.sh  {% for cert_domain in cert_config["names"] %} -d {{ cert_domain }} {% endfor %} \
- {% if "dns" in cert_config %} --dns {{ cert_config["dns"] }} {% endif %} --issue
+ {% if "dns" in cert_config %} --dns {{ cert_config["dns"] }} {% endif %} \
+ {% if "pre_params" in cert_config %} {{ cert_config["pre_params"] }} {% endif %} \
+ --issue  {% if "post_params" in cert_config %} {{ cert_config["post_params"] }} {% endif %}

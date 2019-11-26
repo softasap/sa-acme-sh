@@ -42,9 +42,9 @@ vars:
 
 ```
 
-Issuing certificate example:
+## Issuing certificate example:
 
-Certificate issuing via godaddy provider 
+### Certificate issuing via godaddy provider
 
 ```sh
 
@@ -54,11 +54,25 @@ acme.sh --issue -d voronenko.net -d www.voronenko.net --dns dns_gd
 
 ```
 
-Listing certificates 
+Listing certificates
 ```
 acme.sh --list
 Main_Domain    KeyLength  SAN_Domains        Created                       Renew
 voronenko.net  ""         www.voronenko.net  Wed Mar  6 12:37:30 UTC 2019  Sun May  5 12:37:30 UTC 2019
+```
+
+### Certificate issuing using .wellknown
+
+nginx.conf
+```
+location /.well-known/acme-challenge/ {
+  default_type "text/plain";
+  root /var/www/;
+}
+```
+
+```sh
+acme.sh -d voronenko.net -d www.voronenko.net --webroot /var/www/ --issue
 ```
 
 
