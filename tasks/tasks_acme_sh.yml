@@ -106,6 +106,15 @@
       - letsencrypt
 
   - name: Lets Encrypt | Setup cron
+    package:
+      name: cron
+      state: present
+    become: yes
+    when: option_setup_cron
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Setup cron
     cron:
       name:   "lets encrypt cron"
       minute: "0"
