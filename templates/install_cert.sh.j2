@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -xe
+
+acme.sh --install-cert -d {{ cert_primary_domain }} \
+  --cert-file {{ cert_config['ssl_install_path']}}/{{ cert_primary_name }}.crt \
+  --key-file {{ cert_config['ssl_install_path']}}/{{ cert_primary_name }}.key \
+  --fullchain-file {{ cert_config['ssl_install_path']}}/{{ cert_primary_name }}_full.crt
+#  --reloadcmd "{{ cert_config['reloadcmd'] if ('reloadcmd' in cert_config) else "sudo systemctl reload nginx.service" }}"

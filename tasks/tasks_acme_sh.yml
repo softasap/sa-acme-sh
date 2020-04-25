@@ -20,14 +20,15 @@
     tags:
       - letsencrypt
 
-  # - name: Lets Encrypt | Create letsencrypt '.acme-challenges'  directory
-  #   file:
-  #     path:  "{{ le_install_dir }}/.acme-challenges"
-  #     owner: "le"
-  #     state: "directory"
-  #   become: yes
-  #   tags:
-  #     - letsencrypt
+  - name: Lets Encrypt | Create letsencrypt '.acme-challenges'  directory
+    file:
+      path:  "{{ le_wellknown_path }}"
+      owner: le
+      group: le
+      state: directory
+    become: yes
+    tags:
+      - letsencrypt
 
   - name: Lets Encrypt | config dir
     file:
@@ -101,6 +102,15 @@
       dest: "/usr/local/bin/acme.sh"
       mode: "u=rwx,g=rx,o=rx"
     become: yes
+    tags:
+      - letsencrypt
+
+  - name: Lets Encrypt | Setup cron
+    package:
+      name: cron
+      state: present
+    become: yes
+    when: option_setup_cron
     tags:
       - letsencrypt
 
